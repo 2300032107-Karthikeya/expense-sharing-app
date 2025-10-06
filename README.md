@@ -13,9 +13,3 @@ A simple web app to split and track shared expenses among friends, roommates, or
 **Backend:** Spring Boot  
 **Database:** MySQL  
 
-## Setup Instructions
-
-### Backend
-```bash
-cd backend
-mvn spring-boot:run
