@@ -1,0 +1,53 @@
+package com.example.demo.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepo;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepo userRepository;
+
+    // ✅Signup a new user
+    public User signup(User user) throws Exception {
+        // Check if email already exists
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new Exception("Email already registered");
+        }
+
+        // You can hash the password here before saving (for now plain text)
+        return userRepository.save(user);
+    }
+
+    // Login: check email & password
+    public User login(String email, String password) throws Exception {
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new Exception("User not found");
+        }
+
+        if (!user.getPasswordHash().equals(password)) {
+            throw new Exception("Invalid password");
+        }
+
+        return user;
+    }
+
+    // ✅ Get all users
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // ✅ Get user by ID
+    public User getUserById(Long userId) throws Exception {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+    }
+}

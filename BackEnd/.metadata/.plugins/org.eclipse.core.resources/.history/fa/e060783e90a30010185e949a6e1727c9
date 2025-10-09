@@ -1,0 +1,96 @@
+package com.example.demo.service;
+
+import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.Group;
+import com.example.demo.model.Expense;
+import com.example.demo.model.User;
+import com.example.demo.repository.GroupRepo;
+import com.example.demo.repository.UserRepo;
+import com.example.demo.repository.ExpenseRepo;
+
+@Service
+public class GroupService {
+
+    @Autowired
+    private GroupRepo groupRepository;
+
+    @Autowired
+    private UserRepo userRepository;
+
+    @Autowired
+    private ExpenseRepo expenseRepository;
+
+    // ==============================
+    // Create a new group
+    // ==============================
+    public Group createGroup(String name, String description) throws Exception {
+        if (groupRepository.existsByName(name)) {
+            throw new Exception("Group name already exists");
+        }
+        Group group = new Group(name, description);
+        return groupRepository.save(group);
+    }
+
+    // ==============================
+    // Add a user to a group
+    // ==============================
+    public Group addUserToGroup(Long groupId, Long userId) throws Exception {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new Exception("Group not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        group.getMembers().add(user);
+        return groupRepository.save(group);
+    }
+
+    // ==============================
+    // Get all groups
+    // ==============================
+    public List<Group> getAllGroups() {
+        return groupRepository.findAll();
+    }
+
+    // ==============================
+    // Get group by ID
+    // ==============================
+    public Group getGroupById(Long groupId) throws Exception {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new Exception("Group not found with ID: " + groupId));
+    }
+
+    // ==============================
+    // Calculate balances for group members
+    // ==============================
+    public Map<String, Double> calculateBalances(Long groupId) throws Exception {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new Exception("Group not found"));
+
+        List<Expense> expenses = expenseRepository.findByGroup(group);
+
+        Map<String, Double> balances = new HashMap<>();
+
+        // Initialize balances
+        for (User user : group.getMembers()) {
+            balances.put(user.getName(), 0.0);
+        }
+
+        // Calculate balances
+        for (Expense expense : expenses) {
+            double splitAmount = expense.getAmount() / group.getMembers().size();
+            for (User user : group.getMembers()) {
+                if (user.getuserId.equals(expense.getPaidBy().)) {
+                	
+                    balances.put(user.getName(), balances.get(user.getName()) + (expense.getAmount() - splitAmount));
+                } else {
+                    balances.put(user.getName(), balances.get(user.getName()) - splitAmount);
+                }
+            }
+        }
+
+        return balances;
+    }
+}

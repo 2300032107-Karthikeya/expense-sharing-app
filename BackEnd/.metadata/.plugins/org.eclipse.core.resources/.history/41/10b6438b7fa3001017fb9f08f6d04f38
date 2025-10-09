@@ -1,0 +1,80 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.model.User;
+import com.example.demo.service.UserService;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    // ✅ Signup
+    @PostMapping("/auth/signup")
+    public ResponseEntity<?> signup(@RequestBody User user) {
+        try {
+            User newUser = userService.signup(user);
+            return ResponseEntity.ok(newUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ✅ Login
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ✅ Get all users
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    // ✅ Get user by ID
+    @GetMapping("/users/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ==============================
+    // ✅ Helper DTO for login request
+    // ==============================
+    public static class LoginRequest {
+        private String email;
+        private String password;
+
+        // getters and setters
+        public String getEmail() {
+            return email;
+        }
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        public String getPassword() {
+            return password;
+        }
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+}
